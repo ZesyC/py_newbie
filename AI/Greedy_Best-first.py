@@ -75,8 +75,21 @@ def bai1():
         ('F', 'G'): 5, ('E', 'G'): 2
     }
 
+    print(f"Từ S đến G: ")
     find = Greedy_best_first_search(graph, heuristic, start='S', goals='G')
     path, close = find.greedy(verbose=True)
+    print(f"Thứ tự các nút được xét: {' -> '.join(close)}")
+    if path is None:
+        print("Không tìm thấy đường đi từ S đến G.")
+        return
+
+    total_cost = sum(edge_cost[(a, b)] for a, b in zip(path, path[1:]))
+    print(f"Đường đi tìm được: {' -> '.join(path)}")
+    print(f"Tổng chi phí đường đi: {total_cost}")
+
+    print(f"Từ A đến G: ")
+    find2 = Greedy_best_first_search(graph, heuristic, start='A', goals='G')
+    path, close = find2.greedy(verbose=True)
     print(f"Thứ tự các nút được xét: {' -> '.join(close)}")
     if path is None:
         print("Không tìm thấy đường đi từ S đến G.")

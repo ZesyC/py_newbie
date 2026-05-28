@@ -74,6 +74,7 @@ def bai1():
         ('F', 'G'): 5, ('E', 'G'): 2
     }
 
+    print(f"Từ S đến G: ")
     find = Steepest_ascent_hill_climbing(
         graph, heuristic, start='S', goals='G'
     )
@@ -88,6 +89,20 @@ def bai1():
     print(f"Đường đi tìm được: {' -> '.join(path)}")
     print(f"Tổng chi phí đường đi: {total_cost}")
 
+    print(f"Từ A đến G: ")
+    find2 = Steepest_ascent_hill_climbing(
+        graph, heuristic, start='A', goals='G'
+    )
+    path, visited = find2.hill_climbing(verbose=True)
+
+    print(f"Thứ tự các nút được chọn: {' -> '.join(visited)}")
+    if path is None:
+        print("Không tìm thấy đường đi từ S đến G.")
+        return
+
+    total_cost = sum(edge_cost[(a, b)] for a, b in zip(path, path[1:]))
+    print(f"Đường đi tìm được: {' -> '.join(path)}")
+    print(f"Tổng chi phí đường đi: {total_cost}")
 
 if __name__ == "__main__":
     bai1()

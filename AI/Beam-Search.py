@@ -78,6 +78,7 @@ def bai1():
         ('F', 'G'): 5, ('E', 'G'): 2
     }
 
+    print(f"Đi từ S đến G: ")
     find = Beam_search(graph, heuristic, start='S', goals='G', width=2)
     path, close = find.beam(verbose=True)
     print(f"Thứ tự các nút được xét: {' -> '.join(close)}")
@@ -89,5 +90,16 @@ def bai1():
     print(f"Đường đi tìm được: {' -> '.join(path)}")
     print(f"Tổng chi phí đường đi: {total_cost}")
 
+    print(f"Đi từ A đến G: ")
+    find2 = Beam_search(graph, heuristic, start='A', goals='G', width=2)
+    path, close = find2.beam(verbose=True)
+    print(f"Thứ tự các nút được xét: {' -> '.join(close)}")
+    if path is None:
+        print("Không tìm thấy đường đi từ S đến G.")
+        return
+
+    total_cost = sum(edge_cost[(a, b)] for a, b in zip(path, path[1:]))
+    print(f"Đường đi tìm được: {' -> '.join(path)}")
+    print(f"Tổng chi phí đường đi: {total_cost}")
 
 bai1()
