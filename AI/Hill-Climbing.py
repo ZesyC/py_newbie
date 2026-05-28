@@ -5,16 +5,20 @@ class Steepest_ascent_hill_climbing:
         self.start = start
         self.goals = {goals} if isinstance(goals, str) else set(goals)
 
-    def hill_climbing(self):
+    def hill_climbing(self, verbose: bool = False):
         current = self.start
         path = [current]
         visited = [current]
 
+        step = 0
         while current not in self.goals:
             children = [
                 child for child in self.graph.get(current, [])
                 if child not in visited
             ]
+            step += 1
+            if verbose:
+                print(f"Bước {step}:\nX = {current},\nopen = {children},\nclose = {visited[:-1]}\n")
 
             if not children:
                 return None, visited
@@ -57,15 +61,8 @@ def bai1():
     find = Steepest_ascent_hill_climbing(
         graph, heuristic, start='S', goals='G'
     )
-    path, visited = find.hill_climbing()
+    path, visited = find.hill_climbing(verbose=True)
 
-    print("Cây tìm kiếm được sinh ra (nhánh có * được chọn):")
-    print("S(h=12)")
-    print("|-- A(h=10, cp=4)")
-    print("`-- D(h=9, cp=3) *")
-    print("    |-- E(h=6, cp=6)")
-    print("    `-- F(h=4, cp=3) *")
-    print("        `-- G(h=0, cp=5) *")
     print(f"Thứ tự các nút được chọn: {' -> '.join(visited)}")
     if path is None:
         print("Không tìm thấy đường đi từ S đến G.")
