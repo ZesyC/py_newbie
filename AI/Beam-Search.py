@@ -13,15 +13,18 @@ class Beam_search:
 
         step = 0
         while op:
+            step += 1
             next_op = []
+            if verbose:
+                print(f"Bước {step}:")
+                print(f"  open hiện tại: {self.format_nodes(op)}")
+                print(f"  close hiện tại: {close}")
 
             for x in op:
-                step += 1
-                if verbose:
-                    print(f"Bước {step}:\nX = {x},\nopen = {op},\nclose = {close}\n")
-
                 if x in self.goals:
                     close.append(x)
+                    if verbose:
+                        print(f"  Gặp đích: {x}\n")
                     return self.reconstruct(parent, x), close
 
                 close.append(x)
@@ -31,9 +34,12 @@ class Beam_search:
                         parent[child] = x
 
             next_op.sort(key=lambda node: self.heuristic[node])
+            if verbose:
+                print(f"  Node con sau khi sắp xếp: {self.format_nodes(next_op)}")
+
             op = next_op[:self.width]
             if verbose:
-                print(f"open sau khi chọn {self.width} nút tốt nhất = {op}\n")
+                print(f"  Giữ lại width = {self.width}: {self.format_nodes(op)}\n")
 
         return None, close
 
@@ -43,6 +49,11 @@ class Beam_search:
             path.append(cur)
             cur = parent[cur]
         return list(reversed(path))
+
+    def format_nodes(self, nodes):
+        return '[' + ', '.join(
+            f"{node}(h={self.heuristic[node]})" for node in nodes
+        ) + ']'
 
 
 def bai1():

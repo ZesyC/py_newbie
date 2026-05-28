@@ -16,17 +16,28 @@ class Greedy_best_first_search:
             x = op.pop(0)
             step += 1
             if verbose:
-                print(f"Bước {step}:\nX = {x},\nopen = {op},\nclose = {close}\n")
+                print(f"Bước {step}:")
+                print(f"  Chọn X: {x}(h={self.heuristic[x]})")
+                print(f"  open sau khi lấy X: {self.format_nodes(op)}")
+                print(f"  close hiện tại: {close}")
 
             if x in self.goals:
                 close.append(x)
+                if verbose:
+                    print(f"  Gặp đích: {x}\n")
                 return self.reconstruct(parent, x), close
 
             close.append(x)
+            children = []
             for child in self.graph.get(x, []):
                 if child not in close and child not in op:
                     op.append(child)
+                    children.append(child)
                     parent[child] = x
+            op.sort(key=lambda node: self.heuristic[node])
+            if verbose:
+                print(f"  Node con mới thêm: {self.format_nodes(children)}")
+                print(f"  open sau khi sắp xếp: {self.format_nodes(op)}\n")
 
         return None, close
 
@@ -36,6 +47,11 @@ class Greedy_best_first_search:
             path.append(cur)
             cur = parent[cur]
         return list(reversed(path))
+
+    def format_nodes(self, nodes):
+        return '[' + ', '.join(
+            f"{node}(h={self.heuristic[node]})" for node in nodes
+        ) + ']'
 
 def bai1():
     graph = {

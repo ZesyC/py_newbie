@@ -18,22 +18,38 @@ class Steepest_ascent_hill_climbing:
             ]
             step += 1
             if verbose:
-                print(f"Bước {step}:\nX = {current},\nopen = {children},\nclose = {visited[:-1]}\n")
+                print(f"Bước {step}:")
+                print(f"  Node hiện tại: {current}(h={self.heuristic[current]})")
+                print(f"  Ứng viên: {self.format_nodes(children)}")
+                print(f"  Đã đi qua: {visited[:-1]}")
 
             if not children:
+                if verbose:
+                    print("  Không còn node con để đi tiếp.\n")
                 return None, visited
 
             best_child = min(children, key=lambda node: self.heuristic[node])
+            if verbose:
+                print(f"  Chọn tốt nhất: {best_child}(h={self.heuristic[best_child]})")
 
             # Với heuristic khoảng cách đến đích, giá trị nhỏ hơn là tốt hơn.
             if self.heuristic[best_child] >= self.heuristic[current]:
+                if verbose:
+                    print("  Dừng: node tốt nhất không tốt hơn node hiện tại.\n")
                 return None, visited
 
             current = best_child
             path.append(current)
             visited.append(current)
+            if verbose:
+                print(f"  Đường đi hiện tại: {' -> '.join(path)}\n")
 
         return path, visited
+
+    def format_nodes(self, nodes):
+        return '[' + ', '.join(
+            f"{node}(h={self.heuristic[node]})" for node in nodes
+        ) + ']'
 
 
 def bai1():
