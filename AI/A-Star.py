@@ -1,109 +1,121 @@
-import time
-import tracemalloc
-from queue import PriorityQueue
+class AStarSearch:
+    def __init__(self, graph: dict, heuristic: dict, start, goals, alpha: float = 1.0):
+        self.graph = graph
+        self.heuristic = heuristic
+        self.start = start
+        self.goals = {goals} if isinstance(goals, str) else set(goals)
+        self.alpha = alpha
+
+    def a_star(self, verbose: bool = False):
+        op = [self.start]
+        close = []
+        parent = {self.start: None}
+        g_score = {self.start: 0}
+        best_goal = None
+        best_goal_cost = float('inf')
+
+        step = 0
+        while op:
+            op.sort(key=lambda node: self.f_score(g_score[node], node))
+            x = op.pop(0)
+            step += 1
+
+            if verbose:
+                print(f"Bước {step}:")
+                print(
+                    f"  Chọn X: {x}"
+                    f"(g={g_score[x]}, h={self.heuristic[x]}, "
+                    f"f={self.f_score(g_score[x], x)})"
+                )
+                print(f"  open sau khi lấy X: {self.format_nodes(op, g_score)}")
+                print(f"  close hiện tại: {close}")
+
+            if x in self.goals:
+                close.append(x)
+                if g_score[x] < best_goal_cost:
+                    best_goal = x
+                    best_goal_cost = g_score[x]
+                if verbose:
+                    print(f"  Gặp đích tạm thời: {x}, chi phí = {g_score[x]}")
+
+                if not op or min(g_score[node] for node in op) >= best_goal_cost:
+                    if verbose:
+                        print("  Không còn nhánh nào có g nhỏ hơn đích tốt nhất.\n")
+                    return self.reconstruct(parent, best_goal), close, best_goal_cost
+                continue
+
+            close.append(x)
+            children = []
+            for child, cost in self.graph.get(x, []):
+                new_cost = g_score[x] + cost
+
+                if child in close and new_cost >= g_score.get(child, float('inf')):
+                    continue
+
+                if child not in op or new_cost < g_score.get(child, float('inf')):
+                    parent[child] = x
+                    g_score[child] = new_cost
+                    children.append(child)
+
+                    if child not in op:
+                        op.append(child)
+
+            op.sort(key=lambda node: self.f_score(g_score[node], node))
+            if verbose:
+                print(f"  Node con mới thêm/cập nhật: {self.format_nodes(children, g_score)}")
+                print(f"  open sau khi sắp xếp: {self.format_nodes(op, g_score)}\n")
+
+        if best_goal is not None:
+            return self.reconstruct(parent, best_goal), close, best_goal_cost
+
+        return None, close, float('inf')
+
+    def reconstruct(self, parent, goal):
+        path, cur = [], goal
+        while cur is not None:
+            path.append(cur)
+            cur = parent[cur]
+        return list(reversed(path))
+
+    def format_nodes(self, nodes, g_score):
+        return '[' + ', '.join(
+            f"{node}(g={g_score[node]}, h={self.heuristic[node]}, "
+            f"f={self.f_score(g_score[node], node)})"
+            for node in nodes
+        ) + ']'
+
+    def f_score(self, cost_from_start, node):
+        return cost_from_start + self.alpha * self.heuristic[node]
 
 
-def a_star_search(graph, heuristic, start, goal):
-    """
-    Tìm đường đi ngắn nhất từ start đến goal bằng thuật toán A*.
+def bai2():
+    graph = {
+        'S': [('A', 1), ('B', 1)],
+        'A': [('S', 1), ('B', 9)],
+        'B': [('S', 1), ('A', 9), ('C', 6), ('G', 12)],
+        'C': [('B', 6), ('G', 5)],
+        'G': [('B', 12), ('C', 5)]
+    }
+    heuristic = {
+        'S': 7,
+        'A': 10,
+        'B': 9,
+        'C': 5,
+        'G': 0
+    }
 
-    graph: lưu các cạnh và chi phí giữa các đỉnh
-    heuristic: lưu h(n), tức chi phí ước lượng từ mỗi đỉnh đến đích
-    start: đỉnh bắt đầu
-    goal: đỉnh kết thúc
-    """
+    alpha = 2
+    print(f"Từ S đến G bằng A* với alpha = {alpha}:")
+    find = AStarSearch(graph, heuristic, start='S', goals='G', alpha=alpha)
+    path, close, total_cost = find.a_star(verbose=True)
+    print(f"Thứ tự các nút được xét: {' -> '.join(close)}")
+    if path is None:
+        print("Không tìm thấy đường đi từ S đến G.")
+        return
 
-    # open_set lưu các đỉnh sẽ xét.
-    # Mỗi phần tử có dạng: (f_score, node)
-    open_set = PriorityQueue()
-    open_set.put((heuristic[start], start))
-
-    # came_from dùng để lưu đường đi.
-    # Ví dụ: came_from['D'] = 'A' nghĩa là trước D là A.
-    came_from = {}
-
-    # g_score lưu chi phí thật từ start đến từng đỉnh.
-    # Ban đầu chưa biết đường đi nên gán là vô cực.
-    g_score = {}
-    for node in heuristic:
-        g_score[node] = float('inf')
-
-    # Đi từ start đến chính nó thì chi phí bằng 0.
-    g_score[start] = 0
-
-    while not open_set.empty():
-        _, current = open_set.get()
-
-        if current == goal:
-            path = [goal]
-
-            while current in came_from:
-                current = came_from[current]
-                path.append(current)
-
-            path.reverse()
-            return path, g_score[goal]
-
-        for neighbor, cost in graph[current]:
-            new_cost = g_score[current] + cost
-
-            if new_cost < g_score[neighbor]:
-                came_from[neighbor] = current
-                g_score[neighbor] = new_cost
-
-                f_score = new_cost + heuristic[neighbor]
-                open_set.put((f_score, neighbor))
-
-    return None, float('inf')
-
-
-# Đồ thị của bài 2.
-# Mỗi đỉnh trỏ đến danh sách các đỉnh kề và chi phí đi đến đỉnh đó.
-graph = {
-    'A': [('C', 9), ('D', 7), ('E', 13), ('F', 20)],
-    'C': [('H', 6)],
-    'D': [('H', 8), ('E', 4)],
-    'E': [('K', 4), ('I', 3)],
-    'F': [('I', 6)],
-    'H': [('K', 5)],
-    'K': [('B', 6)],
-    'I': [('K', 9), ('B', 5)],
-    'B': [],
-}
-
-# Giá trị heuristic h(n) của từng đỉnh.
-heuristic = {
-    'A': 14,
-    'C': 15,
-    'D': 9,
-    'E': 8,
-    'F': 7,
-    'H': 10,
-    'K': 2,
-    'I': 4,
-    'B': 0,
-}
+    print(f"Đường đi tìm được: {' -> '.join(path)}")
+    print(f"Tổng chi phí đường đi: {total_cost}")
 
 
 if __name__ == "__main__":
-    start_node = 'A'
-    goal_node = 'B'
-
-    tracemalloc.start()
-    start_time = time.perf_counter()
-
-    path, cost = a_star_search(graph, heuristic, start_node, goal_node)
-
-    end_time = time.perf_counter()
-    current_memory, peak_memory = tracemalloc.get_traced_memory()
-    tracemalloc.stop()
-
-    if path is None:
-        print(f"Không tìm thấy đường đi từ {start_node} đến {goal_node}")
-    else:
-        print("Đường đi ngắn nhất:", " -> ".join(path))
-        print("Chi phí:", cost)
-
-    print(f"Thời gian chạy: {end_time - start_time:.6f} giây")
-    print(f"Bộ nhớ hiện tại: {current_memory / 1024:.2f} KB")
-    print(f"Bộ nhớ đỉnh: {peak_memory / 1024:.2f} KB")
+    bai2()
