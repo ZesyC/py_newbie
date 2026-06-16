@@ -9,37 +9,33 @@ class HC:
         op = [self.start]
         closed = []
         parent = {self.start:None}
-        step = 0
 
-        while op :
+        step = 0
+        while op:
             x = op.pop()
-            step+=1
+            step += 1
 
             if verbose:
-                print(f'Step {step}, x = {x}, op = {op}, closed = {closed}')
+                print(f"Step {step}: x = {x}, open = {op}, closed = {closed}")
 
             if x in self.goal:
                 closed.append(x)
                 return self._reconstruct(parent, x), closed
             
-            closed.append(x)
-
             child = [child for child in self.graph.get(x, []) if child not in closed]
 
             if not child:
                 return None, closed
             
-            best_child = min(child, key=lambda node: self.heuristic[node])
+            best_child = min(child, key= lambda node: self.heuristic[node])
 
             if self.heuristic[best_child] >= self.heuristic[x]:
                 return None, closed
             
             op.append(best_child)
             parent[best_child] = x
-
-
         return None, closed
-    
+
     def _reconstruct(self, parent, goal):
         path, cur = [], goal
         while cur is not None:

@@ -37,7 +37,7 @@ class AStarSearch:
                     best_goal = x
                     best_cost = g_score[x]
 
-                if not op or min(g_score[node] for node in op) >= best_cost:
+                if not op or min(self._f_score(g_score.get(node, float('inf')), node) for node in op) >= best_cost:
                     return self._reconstruct(parent, best_goal), closed, best_cost
                 continue
 
