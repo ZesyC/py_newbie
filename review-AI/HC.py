@@ -1,57 +1,51 @@
-class HillClimbingSearch:
-    def __init__(self, graph: dict, heuristic: dict, start, goals):
+class HC:
+    def __init__(self, graph:dict, heuristic:dict, goal, start):
         self.graph = graph
         self.heuristic = heuristic
         self.start = start
-        self.goals = {goals} if isinstance(goals, str) else set(goals)
+        self.goal = set(goal) if not isinstance(goal, set) else goal
 
-    def hill_climbing(self, verbose: bool = False):
+    def hc(self, verbose:bool = False):
         op = [self.start]
         closed = []
-        parent = {self.start: None}
-
+        parent = {self.start:None}
         step = 0
-        while op:
+
+        while op :
             x = op.pop()
-            closed.append(x)
-            step += 1
+            step+=1
 
             if verbose:
-                print(
-                    f"Bước {step}:\n"
-                    f"X = {x}, h(X) = {self.heuristic[x]},\n"
-                    f"open = {op},\n"
-                    f"close = {closed}\n"
-                )
+                print(f'Step {step}, x = {x}, op = {op}, closed = {closed}')
 
-            if x in self.goals:
+            if x in self.goal:
+                closed.append(x)
                 return self._reconstruct(parent, x), closed
+            
+            closed.append(x)
 
-            children = [
-                child for child in self.graph.get(x, [])
-                if child not in closed
-            ]
+            child = [child for child in self.graph.get(x, []) if child not in closed]
 
-            if not children:
+            if not child:
                 return None, closed
-
-            best_child = min(children, key=lambda node: self.heuristic[node])
+            
+            best_child = min(child, key=lambda node: self.heuristic[node])
 
             if self.heuristic[best_child] >= self.heuristic[x]:
                 return None, closed
-
+            
             op.append(best_child)
             parent[best_child] = x
 
-        return None, closed
 
+        return None, closed
+    
     def _reconstruct(self, parent, goal):
         path, cur = [], goal
         while cur is not None:
             path.append(cur)
             cur = parent[cur]
         return list(reversed(path))
-
 
 def bai1():
     graph = {
@@ -76,8 +70,8 @@ def bai1():
     }
 
     print("Bài 1: Hill Climbing từ S đến G:")
-    search = HillClimbingSearch(graph, heuristic, start='S', goals={'G'})
-    path, closed = search.hill_climbing(verbose=True)
+    search = HC(graph, heuristic, start='S', goal={'G'})
+    path, closed = search.hc(verbose=True)
 
     if path is not None:
         total_cost = sum(edge_cost[(a, b)] for a, b in zip(path, path[1:]))

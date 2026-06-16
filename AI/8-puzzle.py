@@ -2,103 +2,102 @@ from collections import deque
 
 
 class EightPuzzle:
-    goal = (1, 2, 3, 4, 5, 6, 7, 8, 0)
+    GOAL = (1, 2, 3, 4, 5, 6, 7, 8, 0)
+    MOVES = [
+        ('up', -1, 0),
+        ('down', 1, 0),
+        ('left', 0, -1),
+        ('right', 0, 1)
+    ]
 
-    def __init__(self, start_state):
-        self.start = tuple(start_state)
+    def __init__(self, start):
+        self.start = tuple(start)
 
-    def get_neighbors(self, state):
-        neighbors = []
-
-        i = state.index(0)
-        r, c = i // 3, i % 3
-
-        candidates = [("up", -1, 0), ("down", 1, 0), ("right", 0, 1), ("left", 0, -1)]
-
-        for act, dr, dc in candidates:
-            nr, nc = r + dr, c + dc
-
-            if 0 <= nr < 3 and 0 <= nc < 3:
-                new_i = nr * 3 + nc
-
-                new_state = list(state)
-                new_state[i], new_state[new_i] = (new_state[new_i], new_state[i])
-
-                neighbors.append((act, tuple(new_state)))
-
-        return neighbors
-
-    def bfs(self):
-        if self.start == self.goal:
-            return [], 0
-
+    def bfs(self, verbose: bool = False):
         op = deque([self.start])
-        parent: dict = {self.start: (None, None)}
-        visited = {self.start}
-        nodes_exp = 0
+        closed = []
+        parent = {self.start: (None, None)}
 
+        step = 0
         while op:
-            state = op.popleft()
-            nodes_exp += 1
+            x = op.popleft()
+            step += 1
 
-            for act, neigh in self.get_neighbors(state):
-                if neigh in visited:
-                    continue
+            if verbose:
+                print(f"Bước {step}:")
+                print(self._format_state(x))
+                print()
 
-                parent[neigh] = (state, act)
+            if x == self.GOAL:
+                closed.append(x)
+                return self._reconstruct(parent, x), closed
 
-                if neigh == self.goal:
-                    return self.__reconstruct(parent, neigh), nodes_exp
+            closed.append(x)
 
-                visited.add(neigh)
-                op.append(neigh)
+            for action, child in self._get_children(x):
+                if child not in parent:
+                    op.append(child)
+                    parent[child] = (x, action)
 
-        return None, nodes_exp
+        return None, closed
 
-    def __reconstruct(self, parent, goal):
-        acts, cur = [], goal
+    def _get_children(self, state):
+        children = []
+        empty_index = state.index(0)
+        row, col = divmod(empty_index, 3)
+
+        for action, row_change, col_change in self.MOVES:
+            new_row = row + row_change
+            new_col = col + col_change
+
+            if 0 <= new_row < 3 and 0 <= new_col < 3:
+                new_index = new_row * 3 + new_col
+                new_state = list(state)
+                new_state[empty_index], new_state[new_index] = (
+                    new_state[new_index],
+                    new_state[empty_index]
+                )
+                children.append((action, tuple(new_state)))
+
+        return children
+
+    def _reconstruct(self, parent, goal):
+        actions = []
+        cur = goal
 
         while parent[cur][0] is not None:
-            prev, act = parent[cur]
-            acts.append(act)
-            cur = prev
+            previous, action = parent[cur]
+            actions.append(action)
+            cur = previous
 
-        return list(reversed(acts))
+        return list(reversed(actions))
 
-    @staticmethod
-    def pretty(state):
+    def _format_state(self, state):
         rows = []
-        for i in range(3):
-            row = state[i * 3 : (i + 1) * 3]
-            rows.append(" ".join(str(x) if x else "_" for x in row))
-        return "\n".join(rows)
+        for i in range(0, 9, 3):
+            row = state[i:i + 3]
+            rows.append(' '.join(str(value) if value else '_' for value in row))
+        return '\n'.join(rows)
 
 
 def bai2():
-    print("\n" + "=" * 60)
-    print("BÀI 2: BFS giải 8-Puzzle")
-    print("=" * 60)
-    
-    # Test 1: trạng thái đơn giản
-    start_easy = (1, 2, 3, 4, 5, 6, 0, 7, 8)
-    print("\n--- Test đơn giản ---")
-    print("Trạng thái ban đầu:")
-    print(EightPuzzle.pretty(start_easy))
-    actions, expanded = EightPuzzle(start_easy).bfs()
-    print(f"\nCác hàng động: {actions}")
-    print(f"Số nút mở rộng: {expanded}")
-    
-    # Test 2: trạng thái slide bài giảng
-    start_hard = (1, 4, 3, 7, 0, 6, 5, 8, 2)
-    print("\n--- Test slide bài giảng ---")
-    print("Trạng thái ban đầu:")
-    print(EightPuzzle.pretty(start_hard))
-    actions2, expanded2 = EightPuzzle(start_hard).bfs()
-    if actions2 is not None:
-        print(f"\nMở rộng: {len(actions2)} bước")
-        print(f"Các hành động: {actions2}")
-    else:
-        print("\nKhông tìm thấy nghiệm")
-    print(f"Số nút mở rộng: {expanded2}")
+    start = (1, 2, 3, 4, 5, 6, 0, 7, 8)
 
-bai2()
+    print("Bài 2: BFS giải bài toán 8-Puzzle:")
+    print("Trạng thái ban đầu:")
+    print(EightPuzzle(start)._format_state(start))
+
+    search = EightPuzzle(start)
+    actions, closed = search.bfs()
+
+    if actions is not None:
+        print(f"Các hành động: {actions}")
+        print(f"Tổng số bước: {len(actions)}")
+    else:
+        print("Không tìm thấy lời giải.")
+
+    print(f"Tổng số trạng thái duyệt: {len(closed)}")
+
+
+if __name__ == "__main__":
+    bai2()
