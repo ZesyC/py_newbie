@@ -12,7 +12,7 @@ class IterativeDeepeningSearch:
             parent = {self.start: None}
 
             if verbose:
-                print(f"Giới hạn độ sâu = {depth}")
+                print(f"Giới hạn độ sâu = {depth}:")
 
             found = self._dls(self.start, depth, closed, parent, verbose)
             all_closed.extend(closed)
@@ -29,7 +29,7 @@ class IterativeDeepeningSearch:
         closed.append(node)
 
         if verbose:
-            print(f"X = {node}, độ sâu còn lại = {depth_limit}, close = {closed}")
+            print(f"X = {node}, depth = {depth_limit}, close = {closed}")
 
         if node in self.goals:
             return node

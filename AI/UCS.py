@@ -14,16 +14,12 @@ class UniformCostSearch:
         while op:
             op.sort(key=lambda item: item[0])
             current_cost, x = op.pop(0)
-
             if x in closed:
                 continue
 
             step += 1
             if verbose:
-                print(f"Bước {step}:")
-                print(f"X = {x}, chi phí = {current_cost}")
-                print(f"open = {self._format_open(op)}")
-                print(f"close = {closed}\n")
+                print(f"Bước {step}:\nX = {x}, cost = {current_cost},\nopen = {op},\nclose = {closed}\n")
 
             if x in self.goals:
                 closed.append(x)
@@ -50,9 +46,6 @@ class UniformCostSearch:
             path.append(cur)
             cur = parent[cur]
         return list(reversed(path))
-
-    def _format_open(self, op):
-        return '[' + ', '.join(f"{node}(cost={cost})" for cost, node in op) + ']'
 
 
 def bai6():

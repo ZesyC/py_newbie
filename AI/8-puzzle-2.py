@@ -1,6 +1,3 @@
-from collections import deque
-
-
 class EightPuzzle:
     GOAL = (1, 2, 3, 4, 5, 6, 7, 8, 0)
     MOVES = [
@@ -13,33 +10,46 @@ class EightPuzzle:
     def __init__(self, start):
         self.start = tuple(start)
 
-    def bfs(self, verbose: bool = False):
-        op = deque([self.start])
+    def a_star(self, verbose: bool = False):
+        op = [self.start]
         closed = []
         parent = {self.start: (None, None)}
+        g_score = {self.start: 0}
 
         step = 0
         while op:
-            x = op.popleft()
+            op.sort(key=lambda state: self._f_score(g_score[state], state))
+            x = op.pop(0)
             step += 1
 
             if verbose:
                 print(f"Bước {step}:")
                 print(self._format_state(x))
-                print()
+                print(
+                    f"g(X) = {g_score[x]}, "
+                    f"h(X) = {self._heuristic(x)}, "
+                    f"f(X) = {self._f_score(g_score[x], x)}\n"
+                )
 
             if x == self.GOAL:
                 closed.append(x)
-                return self._reconstruct(parent, x), closed
+                return self._reconstruct(parent, x), closed, g_score[x]
 
             closed.append(x)
 
             for action, child in self._get_children(x):
-                if child not in parent:
+                new_cost = g_score[x] + 1
+                old_cost = g_score.get(child, float('inf'))
+
+                if child in closed and new_cost >= old_cost:
+                    continue
+
+                if child not in op or new_cost < old_cost:
                     op.append(child)
                     parent[child] = (x, action)
+                    g_score[child] = new_cost
 
-        return None, closed
+        return None, closed, float('inf')
 
     def _get_children(self, state):
         children = []
@@ -60,6 +70,25 @@ class EightPuzzle:
                 children.append((action, tuple(new_state)))
 
         return children
+
+    def _heuristic(self, state):
+        total_distance = 0
+
+        for index, value in enumerate(state):
+            if value == 0:
+                continue
+
+            current_row, current_col = divmod(index, 3)
+            goal_index = self.GOAL.index(value)
+            goal_row, goal_col = divmod(goal_index, 3)
+
+            total_distance += abs(current_row - goal_row)
+            total_distance += abs(current_col - goal_col)
+
+        return total_distance
+
+    def _f_score(self, cost_from_start, state):
+        return cost_from_start + self._heuristic(state)
 
     def _reconstruct(self, parent, goal):
         actions = []
@@ -83,16 +112,17 @@ class EightPuzzle:
 def bai2():
     start = (1, 2, 3, 4, 5, 0, 6, 7, 8)
 
-    print("Bài 2: BFS giải bài toán 8-Puzzle:")
+    print("Bài 2: A* giải bài toán 8-Puzzle:")
     print("Trạng thái ban đầu:")
     print(EightPuzzle(start)._format_state(start))
 
     search = EightPuzzle(start)
-    actions, closed = search.bfs()
+    actions, closed, total_cost = search.a_star()
 
     if actions is not None:
         print(f"Các hành động: {actions}")
         print(f"Tổng số bước: {len(actions)}")
+        print(f"Tổng chi phí: {total_cost}")
     else:
         print("Không tìm thấy lời giải.")
 
