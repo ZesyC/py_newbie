@@ -21,21 +21,21 @@ class EightPuzzle:
             op.sort(key=lambda state: self._f_score(g_score[state], state))
             x = op.pop(0)
             step += 1
-
-            if verbose:
-                print(f"Bước {step}:")
-                print(self._format_state(x))
-                print(
-                    f"g(X) = {g_score[x]}, "
-                    f"h(X) = {self._heuristic(x)}, "
-                    f"f(X) = {self._f_score(g_score[x], x)}\n"
-                )
+            closed.append(x)
 
             if x == self.GOAL:
-                closed.append(x)
+                if verbose:
+                    print(f"Buoc {step}:")
+                    print("X =")
+                    print(self._format_state(x))
+                    print(
+                        f"g(X) = {g_score[x]}, "
+                        f"h(X) = {self._heuristic(x)}, "
+                        f"f(X) = {self._f_score(g_score[x], x)}"
+                    )
+                    print(f"open = {len(op)} trang thai")
+                    print(f"close = {len(closed)} trang thai\n")
                 return self._reconstruct(parent, x), closed, g_score[x]
-
-            closed.append(x)
 
             for action, child in self._get_children(x):
                 new_cost = g_score[x] + 1
@@ -48,6 +48,18 @@ class EightPuzzle:
                     op.append(child)
                     parent[child] = (x, action)
                     g_score[child] = new_cost
+
+            if verbose:
+                print(f"Buoc {step}:")
+                print("X =")
+                print(self._format_state(x))
+                print(
+                    f"g(X) = {g_score[x]}, "
+                    f"h(X) = {self._heuristic(x)}, "
+                    f"f(X) = {self._f_score(g_score[x], x)}"
+                )
+                print(f"open = {len(op)} trang thai")
+                print(f"close = {len(closed)} trang thai\n")
 
         return None, closed, float('inf')
 
@@ -112,21 +124,21 @@ class EightPuzzle:
 def bai2():
     start = (1, 2, 3, 4, 5, 0, 6, 7, 8)
 
-    print("Bài 2: A* giải bài toán 8-Puzzle:")
-    print("Trạng thái ban đầu:")
+    print("Bai 2: A* giai bai toan 8-Puzzle:")
+    print("Trang thai ban dau:")
     print(EightPuzzle(start)._format_state(start))
 
     search = EightPuzzle(start)
-    actions, closed, total_cost = search.a_star()
+    actions, closed, total_cost = search.a_star(verbose=True)
 
     if actions is not None:
-        print(f"Các hành động: {actions}")
-        print(f"Tổng số bước: {len(actions)}")
-        print(f"Tổng chi phí: {total_cost}")
+        print(f"Cac hanh dong: {actions}")
+        print(f"Tong so buoc: {len(actions)}")
+        print(f"Tong chi phi: {total_cost}")
     else:
-        print("Không tìm thấy lời giải.")
+        print("Khong tim thay loi giai.")
 
-    print(f"Tổng số trạng thái duyệt: {len(closed)}")
+    print(f"Tong so trang thai duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

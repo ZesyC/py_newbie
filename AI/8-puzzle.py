@@ -22,22 +22,28 @@ class EightPuzzle:
         while op:
             x = op.popleft()
             step += 1
-
-            if verbose:
-                print(f"Bước {step}:")
-                print(self._format_state(x))
-                print()
+            closed.append(x)
 
             if x == self.GOAL:
-                closed.append(x)
+                if verbose:
+                    print(f"Buoc {step}:")
+                    print("X =")
+                    print(self._format_state(x))
+                    print(f"open = {len(op)} trang thai")
+                    print(f"close = {len(closed)} trang thai\n")
                 return self._reconstruct(parent, x), closed
-
-            closed.append(x)
 
             for action, child in self._get_children(x):
                 if child not in parent:
                     op.append(child)
                     parent[child] = (x, action)
+
+            if verbose:
+                print(f"Buoc {step}:")
+                print("X =")
+                print(self._format_state(x))
+                print(f"open = {len(op)} trang thai")
+                print(f"close = {len(closed)} trang thai\n")
 
         return None, closed
 
@@ -83,20 +89,20 @@ class EightPuzzle:
 def bai2():
     start = (1, 2, 3, 4, 5, 0, 6, 7, 8)
 
-    print("Bài 2: BFS giải bài toán 8-Puzzle:")
-    print("Trạng thái ban đầu:")
+    print("Bai 2: BFS giai bai toan 8-Puzzle:")
+    print("Trang thai ban dau:")
     print(EightPuzzle(start)._format_state(start))
 
     search = EightPuzzle(start)
-    actions, closed = search.bfs()
+    actions, closed = search.bfs(verbose=True)
 
     if actions is not None:
-        print(f"Các hành động: {actions}")
-        print(f"Tổng số bước: {len(actions)}")
+        print(f"Cac hanh dong: {actions}")
+        print(f"Tong so buoc: {len(actions)}")
     else:
-        print("Không tìm thấy lời giải.")
+        print("Khong tim thay loi giai.")
 
-    print(f"Tổng số trạng thái duyệt: {len(closed)}")
+    print(f"Tong so trang thai duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

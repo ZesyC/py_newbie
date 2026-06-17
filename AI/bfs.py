@@ -17,24 +17,30 @@ class BreadthFirstSearch:
             x = op.popleft()
             step += 1
 
-            if verbose:
-                print(
-                    f"Bước {step}:\n"
-                    f"X = {x},\n"
-                    f"open = {list(op)},\n"
-                    f"close = {closed}\n"
-                )
+            closed.append(x)
 
             if x in self.goals:
-                closed.append(x)
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x},\n"
+                        f"open = {list(op)},\n"
+                        f"close = {closed}\n"
+                    )
                 return self._reconstruct(parent, x), closed
-
-            closed.append(x)
 
             for child in self.graph.get(x, []):
                 if child not in closed and child not in op:
                     op.append(child)
                     parent[child] = x
+
+            if verbose:
+                print(
+                    f"Buoc {step}:\n"
+                    f"X = {x},\n"
+                    f"open = {list(op)},\n"
+                    f"close = {closed}\n"
+                )
 
         return None, closed
 
@@ -47,7 +53,7 @@ class BreadthFirstSearch:
 
 
 def bai1():
-    print("Bài 1: BFS trên đồ thị tổng quát:")
+    print("Bai 1: BFS tren do thi tong quat:")
     graph = {
         'A': ['B', 'C', 'D'], 'B': ['E', 'F'], 'C': ['G', 'H'],
         'D': ['I', 'J'], 'E': ['K', 'L', 'M'], 'F': [],
@@ -61,12 +67,12 @@ def bai1():
     path, closed = search.bfs(verbose=True)
 
     if path is not None:
-        print(f"Đường đi tìm được: {' - '.join(path)}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
     else:
-        print("Không tìm thấy đường đi.")
+        print("Khong tim thay duong di.")
 
-    print(f"Thứ tự duyệt: {closed}")
-    print(f"Tổng số nút duyệt: {len(closed)}")
+    print(f"Thu tu duyet: {closed}")
+    print(f"Tong so nut duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

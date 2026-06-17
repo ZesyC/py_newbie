@@ -1,5 +1,5 @@
 class IDAStarSearch:
-    def __init__(self, graph: dict, heuristic: dict, start, goals, alpha=1):
+    def __init__(self, graph: dict, heuristic: dict, start, goals, alpha=2):
         self.graph = graph
         self.heuristic = heuristic
         self.start = start
@@ -7,95 +7,74 @@ class IDAStarSearch:
         self.alpha = alpha
 
     def ida_star(self, verbose: bool = False):
-        threshold = self._f_score(0, self.start)
-        closed = []
-        step = 0
+        threshold = 0
 
         while True:
-            visited = {self.start}
-            parent = {self.start: None}
-            step += 1
-
             if verbose:
-                print(
-                    f"Bước {step}:\n"
-                    f"threshold = {threshold}\n"
-                )
+                print(f"\nThreshold = {threshold}:")
 
-            next_threshold, result, total_cost = self._search(
-                x=self.start,
-                cost_from_start=0,
-                threshold=threshold,
-                visited=visited,
-                parent=parent,
-                closed=closed,
-                verbose=verbose
-            )
+            op = [(self._f_score(0, self.start), 0, self.start)]
+            closed = []
+            parent = {self.start: None}
+            next_threshold = float('inf')
+            step = 0
 
-            if result is not None:
-                return self._reconstruct(parent, result), closed, total_cost
+            while op:
+                op.sort(key=lambda x: x[0], reverse=True)
+                f_current, g_current, x = op.pop()
+                step += 1
+
+                if x in self.goals:
+                    closed.append(x)
+                    if verbose:
+                        open_nodes = [node[2] for node in op]
+                        print(
+                            f"Buoc {step}:\n"
+                            f"X = {x}, f(X) = {f_current},\n"
+                            f"open = {open_nodes},\n"
+                            f"close = {closed}\n"
+                        )
+                    return self._reconstruct(parent, x), closed, g_current
+
+                closed.append(x)
+
+                for child, cost in self.graph.get(x, []):
+                    cur = x
+                    in_path = False
+                    while cur is not None:
+                        if cur == child:
+                            in_path = True
+                            break
+                        cur = parent[cur]
+                    if in_path:
+                        continue
+
+                    g_child = g_current + cost
+                    f_child = self._f_score(g_child, child)
+
+                    if f_child <= threshold:
+                        op.append((f_child, g_child, child))
+                        parent[child] = x
+                    else:
+                        next_threshold = min(next_threshold, f_child)
+
+                if verbose:
+                    open_nodes = [node[2] for node in op]
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, f(X) = {f_current},\n"
+                        f"open = {open_nodes},\n"
+                        f"close = {closed}\n"
+                    )
 
             if next_threshold == float('inf'):
                 return None, closed, float('inf')
 
-            threshold = next_threshold
-
-    def _search(
-        self,
-        x,
-        cost_from_start,
-        threshold,
-        visited,
-        parent,
-        closed,
-        verbose
-    ):
-        current_f = self._f_score(cost_from_start, x)
-        closed.append(x)
-
-        if verbose:
-            print(
-                f"X = {x}, g(X) = {cost_from_start}, "
-                f"h(X) = {self.heuristic[x]}, f(X) = {current_f},\n"
-                f"close = {closed}\n"
-            )
-
-        if current_f > threshold:
-            return current_f, None, float('inf')
-
-        if x in self.goals:
-            return current_f, x, cost_from_start
-
-        next_threshold = float('inf')
-
-        for child, cost in self.graph.get(x, []):
-            if child in visited:
-                continue
-
-            visited.add(child)
-            parent[child] = x
-
-            result_threshold, result, total_cost = self._search(
-                x=child,
-                cost_from_start=cost_from_start + cost,
-                threshold=threshold,
-                visited=visited,
-                parent=parent,
-                closed=closed,
-                verbose=verbose
-            )
-
-            if result is not None:
-                return result_threshold, result, total_cost
-
-            next_threshold = min(next_threshold, result_threshold)
-            visited.remove(child)
-            parent.pop(child)
-
-        return next_threshold, None, float('inf')
+            threshold += self.alpha
 
     def _f_score(self, cost_from_start, node):
-        return cost_from_start + self.alpha * self.heuristic[node]
+        return cost_from_start + self.heuristic[node]
+
 
     def _reconstruct(self, parent, goal):
         path, cur = [], goal
@@ -122,20 +101,19 @@ def bai2():
     }
 
     alpha = 2
-    print(f"Bài 2: IDA* từ S đến G với alpha = {alpha}:")
+    print(f"Bai 2: IDA* tu S den G voi alpha = {alpha}:")
     search = IDAStarSearch(
         graph, heuristic, start='S', goals={'G'}, alpha=alpha
     )
     path, closed, total_cost = search.ida_star(verbose=True)
 
     if path is not None:
-        print(f"Đường đi tìm được: {' - '.join(path)}")
-        print(f"Tổng chi phí đường đi: {total_cost}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
+        print(f"Tong chi phi duong di: {total_cost}")
     else:
-        print("Không tìm thấy đường đi.")
+        print("Khong tim thay duong di.")
 
-    print(f"Thứ tự duyệt: {closed}")
-    print(f"Tổng số nút duyệt: {len(closed)}")
+    print(f"Tong so nut duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

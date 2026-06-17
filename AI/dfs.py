@@ -2,7 +2,7 @@ class DFSGraphSearch:
     def __init__(self, graph: dict, start, goals):
         self.graph = graph
         self.start = start
-        self.goals = set(goals) if not isinstance(goals, set) else goals
+        self.goals = {goals} if isinstance(goals, str) else set(goals)
 
     def dfs(self, verbose: bool = False):
         op = [self.start]
@@ -12,47 +12,65 @@ class DFSGraphSearch:
         step = 0
         while op:
             x = op.pop()
-            step+=1
-            if verbose:
-                print(f"Bước {step}:\nX = {x},\nopen = {op},\nclose = {closed}\n")
+            step += 1
 
-            if x in self.goals:
-                closed.append(x)
-                return self._reconstruct(parent, x), closed
-            
             closed.append(x)
 
-            for child in reversed(self.graph.get(x,[])):
+            if x in self.goals:
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x},\n"
+                        f"open = {op},\n"
+                        f"close = {closed}\n"
+                    )
+                return self._reconstruct(parent, x), closed
+
+            for child in reversed(self.graph.get(x, [])):
                 if child not in closed and child not in op:
                     op.append(child)
                     parent[child] = x
 
+            if verbose:
+                print(
+                    f"Buoc {step}:\n"
+                    f"X = {x},\n"
+                    f"open = {op},\n"
+                    f"close = {closed}\n"
+                )
+
         return None, closed
-    
-    def _reconstruct(self, parent, goals):
-        path, cur, = [], goals
+
+    def _reconstruct(self, parent, goal):
+        path, cur = [], goal
         while cur is not None:
             path.append(cur)
             cur = parent[cur]
         return list(reversed(path))
-    
+
+
 def bai5():
-    print('Bài 5: DFS trên đồ thị tổng quát:')
+    print("Bai 5: DFS tren do thi tong quat:")
     graph = {
         'A': ['B', 'C', 'D'], 'B': ['E', 'F'], 'C': ['G', 'H'],
-         'D': ['I', 'J'], 'E': ['K', 'L', 'M'], 'F': [],
+        'D': ['I', 'J'], 'E': ['K', 'L', 'M'], 'F': [],
         'G': ['N'], 'H': ['O', 'P'], 'I': ['P', 'Q'],
         'J': ['R'], 'K': ['S'], 'L': ['T'], 'M': [],
         'N': [], 'O': [], 'P': ['U'], 'Q': [], 'R': [],
-        'S': [], 'T': [], 'U': [] }
+        'S': [], 'T': [], 'U': []
+    }
 
-    ds = DFSGraphSearch(graph, start = 'A', goals = {'U'})
-    path, closed = ds.dfs(verbose=True)
+    search = DFSGraphSearch(graph, start='A', goals={'U'})
+    path, closed = search.dfs(verbose=True)
+
     if path is not None:
-        print(f"Đường đi tìm được: {' - '.join(path)}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
     else:
-        print(f'Không tìm thấy đường đi.')
-    print(f'Thứ tự duyệt: {closed}')
-    print(f'Tổng số nút duyệt: {len(closed)}')
+        print("Khong tim thay duong di.")
 
-bai5()
+    print(f"Thu tu duyet: {closed}")
+    print(f"Tong so nut duyet: {len(closed)}")
+
+
+if __name__ == "__main__":
+    bai5()

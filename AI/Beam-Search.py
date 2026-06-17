@@ -13,27 +13,38 @@ class BeamSearch:
 
         step = 0
         while op:
-            step += 1
+            current_level = op
             next_op = []
+            op = []
 
-            if verbose:
-                print(
-                    f"Bước {step}:\n"
-                    f"open = {op},\n"
-                    f"close = {closed}\n"
-                )
-
-            for x in op:
-                if x in self.goals:
-                    closed.append(x)
-                    return self._reconstruct(parent, x), closed
-
+            for index, x in enumerate(current_level):
+                step += 1
                 closed.append(x)
+
+                if x in self.goals:
+                    if verbose:
+                        open_nodes = current_level[index + 1:] + next_op
+                        print(
+                            f"Buoc {step}:\n"
+                            f"X = {x}, h(X) = {self.heuristic[x]},\n"
+                            f"open = {open_nodes},\n"
+                            f"close = {closed}\n"
+                        )
+                    return self._reconstruct(parent, x), closed
 
                 for child in self.graph.get(x, []):
                     if child not in closed and child not in next_op:
                         next_op.append(child)
                         parent[child] = x
+
+                if verbose:
+                    open_nodes = current_level[index + 1:] + next_op
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, h(X) = {self.heuristic[x]},\n"
+                        f"open = {open_nodes},\n"
+                        f"close = {closed}\n"
+                    )
 
             next_op.sort(key=lambda node: self.heuristic[node])
             op = next_op[:self.width]
@@ -71,7 +82,7 @@ def bai1():
     }
 
     width = 2
-    print(f"Bài 1: Beam Search từ S đến G với width = {width}:")
+    print(f"Bai 1: Beam Search tu S den G voi width = {width}:")
     search = BeamSearch(
         graph, heuristic, start='S', goals={'G'}, width=width
     )
@@ -79,13 +90,13 @@ def bai1():
 
     if path is not None:
         total_cost = sum(edge_cost[(a, b)] for a, b in zip(path, path[1:]))
-        print(f"Đường đi tìm được: {' - '.join(path)}")
-        print(f"Tổng chi phí đường đi: {total_cost}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
+        print(f"Tong chi phi duong di: {total_cost}")
     else:
-        print("Không tìm thấy đường đi.")
+        print("Khong tim thay duong di.")
 
-    print(f"Thứ tự duyệt: {closed}")
-    print(f"Tổng số nút duyệt: {len(closed)}")
+    print(f"Thu tu duyet: {closed}")
+    print(f"Tong so nut duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

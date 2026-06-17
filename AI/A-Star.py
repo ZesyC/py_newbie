@@ -19,29 +19,29 @@ class AStarSearch:
             op.sort(key=lambda node: self._f_score(g_score[node], node))
             x = op.pop(0)
             step += 1
-
-            if verbose:
-                print(
-                    f"Bước {step}:\n"
-                    f"X = {x}, g(X) = {g_score[x]}, "
-                    f"h(X) = {self.heuristic[x]}, "
-                    f"f(X) = {self._f_score(g_score[x], x)},\n"
-                    f"open = {op},\n"
-                    f"close = {closed}\n"
-                )
+            closed.append(x)
 
             if x in self.goals:
-                closed.append(x)
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, g(X) = {g_score[x]}, "
+                        f"h(X) = {self.heuristic[x]}, "
+                        f"f(X) = {self._f_score(g_score[x], x)},\n"
+                        f"open = {op},\n"
+                        f"close = {closed}\n"
+                    )
 
                 if g_score[x] < best_cost:
                     best_goal = x
                     best_cost = g_score[x]
 
-                if not op or min(self._f_score(g_score.get(node, float('inf')), node) for node in op) >= best_cost:
+                if not op or min(
+                    self._f_score(g_score.get(node, float('inf')), node)
+                    for node in op
+                ) >= best_cost:
                     return self._reconstruct(parent, best_goal), closed, best_cost
                 continue
-
-            closed.append(x)
 
             for child, cost in self.graph.get(x, []):
                 new_cost = g_score[x] + cost
@@ -56,6 +56,16 @@ class AStarSearch:
 
                     if child not in op:
                         op.append(child)
+
+            if verbose:
+                print(
+                    f"Buoc {step}:\n"
+                    f"X = {x}, g(X) = {g_score[x]}, "
+                    f"h(X) = {self.heuristic[x]}, "
+                    f"f(X) = {self._f_score(g_score[x], x)},\n"
+                    f"open = {op},\n"
+                    f"close = {closed}\n"
+                )
 
         if best_goal is not None:
             return self._reconstruct(parent, best_goal), closed, best_cost
@@ -90,20 +100,20 @@ def bai2():
     }
 
     alpha = 2
-    print(f"Bài 2: A* từ S đến G với alpha = {alpha}:")
+    print(f"Bai 2: A* tu S den G voi alpha = {alpha}:")
     search = AStarSearch(
         graph, heuristic, start='S', goals={'G'}, alpha=alpha
     )
     path, closed, total_cost = search.a_star(verbose=True)
 
     if path is not None:
-        print(f"Đường đi tìm được: {' - '.join(path)}")
-        print(f"Tổng chi phí đường đi: {total_cost}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
+        print(f"Tong chi phi duong di: {total_cost}")
     else:
-        print("Không tìm thấy đường đi.")
+        print("Khong tim thay duong di.")
 
-    print(f"Thứ tự duyệt: {closed}")
-    print(f"Tổng số nút duyệt: {len(closed)}")
+    print(f"Thu tu duyet: {closed}")
+    print(f"Tong so nut duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

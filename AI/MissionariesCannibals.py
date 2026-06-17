@@ -17,25 +17,30 @@ class MissionariesCannibals:
         while op:
             x = op.popleft()
             step += 1
-
-            if verbose:
-                print(
-                    f"Bước {step}:\n"
-                    f"X = {x},\n"
-                    f"open = {list(op)},\n"
-                    f"close = {closed}\n"
-                )
+            closed.append(x)
 
             if x == self.goal:
-                closed.append(x)
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x},\n"
+                        f"open = {list(op)},\n"
+                        f"close = {closed}\n"
+                    )
                 return self._reconstruct(parent, x), closed
-
-            closed.append(x)
 
             for action, child in self._get_children(x):
                 if child not in parent:
                     op.append(child)
                     parent[child] = (x, action)
+
+            if verbose:
+                print(
+                    f"Buoc {step}:\n"
+                    f"X = {x},\n"
+                    f"open = {list(op)},\n"
+                    f"close = {closed}\n"
+                )
 
         return None, closed
 
@@ -96,20 +101,20 @@ class MissionariesCannibals:
 
 
 def bai3():
-    print("Bài 3: Bài toán người truyền giáo và kẻ ăn thịt:")
+    print("Bai 3: Bai toan nguoi truyen giao va ke an thit:")
     search = MissionariesCannibals()
     path, closed = search.bfs(verbose=True)
 
     if path is None:
-        print("Không tìm thấy lời giải.")
+        print("Khong tim thay loi giai.")
         return
 
-    print("Đường đi tìm được:")
+    print("Duong di tim duoc:")
     for state, action in path:
-        print(f"Trạng thái: {state}, hành động: {action}")
+        print(f"Trang thai: {state}, hanh dong: {action}")
 
-    print(f"Tổng số chuyến thuyền: {len(path) - 1}")
-    print(f"Tổng số trạng thái duyệt: {len(closed)}")
+    print(f"Tong so chuyen thuyen: {len(path) - 1}")
+    print(f"Tong so trang thai duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

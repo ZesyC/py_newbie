@@ -16,15 +16,14 @@ class HillClimbingSearch:
             closed.append(x)
             step += 1
 
-            if verbose:
-                print(
-                    f"Bước {step}:\n"
-                    f"X = {x}, h(X) = {self.heuristic[x]},\n"
-                    f"open = {op},\n"
-                    f"close = {closed}\n"
-                )
-
             if x in self.goals:
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, h(X) = {self.heuristic[x]},\n"
+                        f"open = {op},\n"
+                        f"close = {closed}\n"
+                    )
                 return self._reconstruct(parent, x), closed
 
             children = [
@@ -33,15 +32,37 @@ class HillClimbingSearch:
             ]
 
             if not children:
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, h(X) = {self.heuristic[x]},\n"
+                        f"open = {op},\n"
+                        f"close = {closed}\n"
+                    )
                 return None, closed
 
             best_child = min(children, key=lambda node: self.heuristic[node])
 
             if self.heuristic[best_child] >= self.heuristic[x]:
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, h(X) = {self.heuristic[x]},\n"
+                        f"open = {op},\n"
+                        f"close = {closed}\n"
+                    )
                 return None, closed
 
             op.append(best_child)
             parent[best_child] = x
+
+            if verbose:
+                print(
+                    f"Buoc {step}:\n"
+                    f"X = {x}, h(X) = {self.heuristic[x]},\n"
+                    f"open = {op},\n"
+                    f"close = {closed}\n"
+                )
 
         return None, closed
 
@@ -75,19 +96,19 @@ def bai1():
         ('F', 'G'): 5, ('E', 'G'): 2
     }
 
-    print("Bài 1: Hill Climbing từ S đến G:")
+    print("Bai 1: Hill Climbing tu S den G:")
     search = HillClimbingSearch(graph, heuristic, start='S', goals={'G'})
     path, closed = search.hill_climbing(verbose=True)
 
     if path is not None:
         total_cost = sum(edge_cost[(a, b)] for a, b in zip(path, path[1:]))
-        print(f"Đường đi tìm được: {' - '.join(path)}")
-        print(f"Tổng chi phí đường đi: {total_cost}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
+        print(f"Tong chi phi duong di: {total_cost}")
     else:
-        print("Không tìm thấy đường đi.")
+        print("Khong tim thay duong di.")
 
-    print(f"Thứ tự duyệt: {closed}")
-    print(f"Tổng số nút duyệt: {len(closed)}")
+    print(f"Thu tu duyet: {closed}")
+    print(f"Tong so nut duyet: {len(closed)}")
 
 
 if __name__ == "__main__":

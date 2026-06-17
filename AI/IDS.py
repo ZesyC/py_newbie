@@ -10,39 +10,68 @@ class IterativeDeepeningSearch:
         for depth in range(max_depth + 1):
             closed = []
             parent = {self.start: None}
+            step = [0]
 
             if verbose:
-                print(f"Giới hạn độ sâu = {depth}:")
+                print(f"Gioi han do sau = {depth}:")
 
-            found = self._dls(self.start, depth, closed, parent, verbose)
+            found = self._dls(
+                self.start, depth, closed, parent, step, verbose
+            )
             all_closed.extend(closed)
 
             if found is not None:
                 return self._reconstruct(parent, found), all_closed
 
             if verbose:
-                print(f"Không tìm thấy ở độ sâu {depth}\n")
+                print(f"Khong tim thay o do sau {depth}\n")
 
         return None, all_closed
 
-    def _dls(self, node, depth_limit, closed, parent, verbose: bool = False):
+    def _dls(self, node, depth_limit, closed, parent, step, verbose=False):
+        step[0] += 1
         closed.append(node)
 
-        if verbose:
-            print(f"X = {node}, depth = {depth_limit}, close = {closed}")
-
         if node in self.goals:
+            if verbose:
+                print(
+                    f"Buoc {step[0]}:\n"
+                    f"X = {node}, depth = {depth_limit},\n"
+                    f"open = [],\n"
+                    f"close = {closed}\n"
+                )
             return node
 
         if depth_limit == 0:
+            if verbose:
+                print(
+                    f"Buoc {step[0]}:\n"
+                    f"X = {node}, depth = {depth_limit},\n"
+                    f"open = [],\n"
+                    f"close = {closed}\n"
+                )
             return None
 
-        for child in self.graph.get(node, []):
-            if child not in closed:
-                parent[child] = node
-                found = self._dls(child, depth_limit - 1, closed, parent, verbose)
-                if found is not None:
-                    return found
+        children = [
+            child for child in self.graph.get(node, [])
+            if child not in closed
+        ]
+
+        if verbose:
+            print(
+                f"Buoc {step[0]}:\n"
+                f"X = {node}, depth = {depth_limit},\n"
+                f"open = {children},\n"
+                f"close = {closed}\n"
+            )
+
+        for child in children:
+            parent[child] = node
+            found = self._dls(
+                child, depth_limit - 1, closed, parent, step, verbose
+            )
+            if found is not None:
+                return found
 
         return None
 
@@ -55,7 +84,7 @@ class IterativeDeepeningSearch:
 
 
 def bai7():
-    print('Bài 7: IDS trên đồ thị tổng quát:')
+    print("Bai 7: IDS tren do thi tong quat:")
     graph = {
         'A': ['B', 'C', 'D'], 'B': ['E', 'F'], 'C': ['G', 'H'],
         'D': ['I', 'J'], 'E': ['K', 'L', 'M'], 'F': [],
@@ -65,15 +94,17 @@ def bai7():
         'S': [], 'T': [], 'U': []
     }
 
-    find = IterativeDeepeningSearch(graph, start='A', goals='U')
-    path, closed = find.ids(max_depth=5, verbose=True)
+    search = IterativeDeepeningSearch(graph, start='A', goals='U')
+    path, closed = search.ids(max_depth=5, verbose=True)
 
     if path is not None:
-        print(f"Đường đi tìm được: {' - '.join(path)}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
     else:
-        print('Không tìm thấy đường đi.')
-    print(f'Thứ tự duyệt: {closed}')
-    print(f'Tổng số nút duyệt: {len(closed)}')
+        print("Khong tim thay duong di.")
+
+    print(f"Thu tu duyet: {closed}")
+    print(f"Tong so nut duyet: {len(closed)}")
 
 
-bai7()
+if __name__ == "__main__":
+    bai7()

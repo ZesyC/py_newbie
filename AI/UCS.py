@@ -14,18 +14,22 @@ class UniformCostSearch:
         while op:
             op.sort(key=lambda item: item[0])
             current_cost, x = op.pop(0)
+
             if x in closed:
                 continue
 
             step += 1
-            if verbose:
-                print(f"Bước {step}:\nX = {x}, cost = {current_cost},\nopen = {op},\nclose = {closed}\n")
+            closed.append(x)
 
             if x in self.goals:
-                closed.append(x)
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, cost = {current_cost},\n"
+                        f"open = {op},\n"
+                        f"close = {closed}\n"
+                    )
                 return self._reconstruct(parent, x), closed, current_cost
-
-            closed.append(x)
 
             for child, cost in self.graph.get(x, []):
                 new_cost = current_cost + cost
@@ -38,6 +42,14 @@ class UniformCostSearch:
                     parent[child] = x
                     op.append((new_cost, child))
 
+            if verbose:
+                print(
+                    f"Buoc {step}:\n"
+                    f"X = {x}, cost = {current_cost},\n"
+                    f"open = {op},\n"
+                    f"close = {closed}\n"
+                )
+
         return None, closed, float('inf')
 
     def _reconstruct(self, parent, goal):
@@ -49,7 +61,7 @@ class UniformCostSearch:
 
 
 def bai6():
-    print('Bài 6: UCS trên đồ thị có trọng số:')
+    print("Bai 6: UCS tren do thi co trong so:")
     graph = {
         'S': [('A', 1), ('B', 4)],
         'A': [('C', 3), ('D', 2)],
@@ -59,16 +71,18 @@ def bai6():
         'G': []
     }
 
-    find = UniformCostSearch(graph, start='S', goals='G')
-    path, closed, total_cost = find.ucs(verbose=True)
+    search = UniformCostSearch(graph, start='S', goals='G')
+    path, closed, total_cost = search.ucs(verbose=True)
 
     if path is not None:
-        print(f"Đường đi tìm được: {' - '.join(path)}")
-        print(f"Tổng chi phí đường đi: {total_cost}")
+        print(f"Duong di tim duoc: {' - '.join(path)}")
+        print(f"Tong chi phi duong di: {total_cost}")
     else:
-        print('Không tìm thấy đường đi.')
-    print(f'Thứ tự duyệt: {closed}')
-    print(f'Tổng số nút duyệt: {len(closed)}')
+        print("Khong tim thay duong di.")
+
+    print(f"Thu tu duyet: {closed}")
+    print(f"Tong so nut duyet: {len(closed)}")
 
 
-bai6()
+if __name__ == "__main__":
+    bai6()
