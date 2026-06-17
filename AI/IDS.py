@@ -4,77 +4,56 @@ class IterativeDeepeningSearch:
         self.start = start
         self.goals = {goals} if isinstance(goals, str) else set(goals)
 
-    def ids(self, max_depth: int, verbose: bool = False):
+    def ids(self, max_depth: int = 50, verbose: bool = False):
         all_closed = []
 
-        for depth in range(max_depth + 1):
+        for limit in range(max_depth + 1):
+            op = [(self.start, [self.start])]
             closed = []
             parent = {self.start: None}
-            step = [0]
+            step = 0
 
             if verbose:
-                print(f"Gioi han do sau = {depth}:")
+                print(f"Gioi han do sau = {limit}:")
 
-            found = self._dls(
-                self.start, depth, closed, parent, step, verbose
-            )
+            while op:
+                x, path = op.pop()
+                step += 1
+                depth = len(path) - 1
+
+                closed.append(x)
+
+                if x in self.goals:
+                    all_closed.extend(closed)
+                    if verbose:
+                        print(
+                            f"Buoc {step}:\n"
+                            f"X = {x}, depth = {depth},\n"
+                            f"open = {[node for node, _ in op]},\n"
+                            f"close = {closed}\n"
+                        )
+                    return self._reconstruct(parent, x), all_closed
+
+                if depth < limit:
+                    for child in reversed(self.graph.get(x, [])):
+                        if child not in path:
+                            op.append((child, path + [child]))
+                            parent[child] = x
+
+                if verbose:
+                    print(
+                        f"Buoc {step}:\n"
+                        f"X = {x}, depth = {depth},\n"
+                        f"open = {[node for node, _ in op]},\n"
+                        f"close = {closed}\n"
+                    )
+
             all_closed.extend(closed)
 
-            if found is not None:
-                return self._reconstruct(parent, found), all_closed
-
             if verbose:
-                print(f"Khong tim thay o do sau {depth}\n")
+                print(f"Khong tim thay o do sau {limit}\n")
 
         return None, all_closed
-
-    def _dls(self, node, depth_limit, closed, parent, step, verbose=False):
-        step[0] += 1
-        closed.append(node)
-
-        if node in self.goals:
-            if verbose:
-                print(
-                    f"Buoc {step[0]}:\n"
-                    f"X = {node}, depth = {depth_limit},\n"
-                    f"open = [],\n"
-                    f"close = {closed}\n"
-                )
-            return node
-
-        if depth_limit == 0:
-            if verbose:
-                print(
-                    f"Buoc {step[0]}:\n"
-                    f"X = {node}, depth = {depth_limit},\n"
-                    f"open = [],\n"
-                    f"close = {closed}\n"
-                )
-            return None
-
-        children = [
-            child for child in self.graph.get(node, [])
-            if child not in closed
-        ]
-
-        if verbose:
-            print(
-                f"Buoc {step[0]}:\n"
-                f"X = {node}, depth = {depth_limit},\n"
-                f"open = {children},\n"
-                f"close = {closed}\n"
-            )
-
-        for child in children:
-            parent[child] = node
-            found = self._dls(
-                child, depth_limit - 1, closed, parent, step, verbose
-            )
-            if found is not None:
-                return found
-
-        return None
-
     def _reconstruct(self, parent, goal):
         path, cur = [], goal
         while cur is not None:
